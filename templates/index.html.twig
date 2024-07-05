@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Home page{% endblock %}
+
+{% block body %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #f3ec78, #af4261);
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .button-container {
+            text-align: center;
+        }
+        .button-container a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+            border-radius: 50%;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            font-size: 18px;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow-wrap: break-word;
+        }
+        .button-container a:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <a href="{{ path('home') }}">Вывод данных из XML</a> <!--заглушка надо потом поменять-->
+
+    </div>
+    <div class="button-container">
+
+        <a href="{{ path('second') }}">Генерация данных в XML</a>
+    </div>
+</body>
+
+
+{% endblock %}
