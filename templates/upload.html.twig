@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Загрузка XSD{% endblock %}
+
+{% block body %}
+    <body>
+    <h1>Загрузка XSD</h1>
+    {% for message in app.flashes('error') %}
+        <div class="error">{{ message }}</div>
+    {% endfor %}
+    <form method="post" enctype="multipart/form-data" action="{{ path('upload_xsd') }}">
+        <input type="file" name="xsd" accept=".xsd" required>
+        <button type="submit">Загрузить</button>
+    </form>
+    <form method="post" action="{{ path('use_default_schema') }}">
+        <button type="submit">Использовать базовую схему</button>
+    </form>
+    </body>
+
+{% endblock %}
