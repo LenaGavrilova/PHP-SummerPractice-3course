@@ -1,0 +1,147 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(45deg, #f3ec78, #af4261);
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+.button-container {
+    text-align: center;
+}
+.button-container a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 150px;
+    margin: 20px;
+    border-radius: 50%;
+    background: white;
+    color: #333;
+    text-decoration: none;
+    font-size: 18px;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow-wrap: break-word;
+}
+.button-container a:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.field-group {
+    margin-bottom: 10px;
+}
+.field-group input, .field-group select {
+    margin-right: 10px;
+}
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.container-upload {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group input,
+.form-group button {
+    width: 99%;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-group button {
+    background-color: #f1cd99;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.form-group button:hover {
+    background-color: #f19274;
+}
+
+.error {
+    color: red;
+    margin-bottom: 15px;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 1200px;
+    max-width: 100%;
+    margin: auto;
+    margin-top: 80px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.field-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.field-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.field-group input[type="text"],
+.field-group input[type="date"],
+.field-group input[type="number"] {
+    width: 99%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.field-group input[type="text"]:last-child {
+    margin-bottom: 0;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #f1cd99;
+    color: white;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #f19274;
+}
