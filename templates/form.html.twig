@@ -10,25 +10,57 @@
             {% for field in fields %}
                 <div class="field-group">
                     <label>{{ field.name }} ({{ field.type }}):</label>
-                    {% set inputType = 'text' %}
-                    {% if field.type == 'xs:date' %}
-                        {% set inputType = 'date' %}
-                    {% elseif field.type == 'xs:integer' %}
-                        {% set inputType = 'number' %}
-                    {% elseif field.type == 'xs:string' %}
-                        {% set inputType = 'text' %}
+                    {% if field.htmlType == 'checkbox' %}
+                        <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
+                    {% elseif field.htmlType == 'date' %}
+                        <input type="date" name="fields[{{ field.name }}][value]"
+                                {% if field.minLength is not null %}
+                                    minlength="{{ field.minLength }}"
+                                {% endif %}
+                                {% if field.maxLength is not null %}
+                                    maxlength="{{ field.maxLength }}"
+                                {% endif %}
+                                {% if field.pattern is not null %}
+                                    pattern="{{ field.pattern }}"
+                                {% endif %}
+                               required>
+                    {% elseif field.htmlType == 'datetime-local' %}
+                        <input type="datetime-local" name="fields[{{ field.name }}][value]"
+                                {% if field.minLength is not null %}
+                                    minlength="{{ field.minLength }}"
+                                {% endif %}
+                                {% if field.maxLength is not null %}
+                                    maxlength="{{ field.maxLength }}"
+                                {% endif %}
+                                {% if field.pattern is not null %}
+                                    pattern="{{ field.pattern }}"
+                                {% endif %}
+                               required>
+                    {% elseif field.htmlType == 'time' %}
+                        <input type="time" name="fields[{{ field.name }}][value]"
+                                {% if field.minLength is not null %}
+                                    minlength="{{ field.minLength }}"
+                                {% endif %}
+                                {% if field.maxLength is not null %}
+                                    maxlength="{{ field.maxLength }}"
+                                {% endif %}
+                                {% if field.pattern is not null %}
+                                    pattern="{{ field.pattern }}"
+                                {% endif %}
+                               required>
+                    {% else %}
+                        <input type="text" name="fields[{{ field.name }}][value]"
+                                {% if field.minLength is not null %}
+                                    minlength="{{ field.minLength }}"
+                                {% endif %}
+                                {% if field.maxLength is not null %}
+                                    maxlength="{{ field.maxLength }}"
+                                {% endif %}
+                                {% if field.pattern is not null %}
+                                    pattern="{{ field.pattern }}"
+                                {% endif %}
+                               required>
                     {% endif %}
-                    <input type="{{ inputType }}" name="fields[{{ field.name }}][value]"
-                            {% if field.minLength is not null %}
-                                minlength="{{ field.minLength }}"
-                            {% endif %}
-                            {% if field.maxLength is not null %}
-                                maxlength="{{ field.maxLength }}"
-                            {% endif %}
-                            {% if field.pattern is not null %}
-                                pattern="{{ field.pattern }}"
-                            {% endif %}
-                           required>
                     <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
                     <input type="hidden" name="fields[{{ field.name }}][type]" value="{{ field.type }}">
                     <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
@@ -37,5 +69,6 @@
             <button type="submit">Отправить</button>
         </form>
     </div>
+
     </body>
 {% endblock %}

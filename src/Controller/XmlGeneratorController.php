@@ -127,14 +127,15 @@ class XmlGeneratorController extends AbstractController
                 'description' => (string) $element['description'] ?? '',
                 'minLength' => null,
                 'maxLength' => null,
-                'pattern' => null
+                'pattern' => null,
+                'htmlType' => 'text',
             ];
+            if (strpos($field['type'], 'tns:') === 0) {
+                $typeName = substr($field['type'], 4); // Remove 'tns:'
+                $typeDefinition = $xml->xpath("//xs:simpleType[@name='{$typeName}']");
 
-            $typeDefinition = $xml->xpath("//xs:simpleType[@name='{$field['type']}']");
-
-            if ($typeDefinition) {
-                foreach ($typeDefinition[0]->xpath('.//xs:restriction') as $restriction) {
-                    foreach ($restriction->children('xs', true) as $constraint) {
+                if ($typeDefinition) {
+                    foreach ($typeDefinition[0]->restriction->children('xs', true) as $constraint) {
                         switch ($constraint->getName()) {
                             case 'minLength':
                                 $field['minLength'] = (int) $constraint['value'];
@@ -149,6 +150,23 @@ class XmlGeneratorController extends AbstractController
                     }
                 }
             }
+
+            switch ($field['type']) {
+                case 'xs:date':
+                case 'date':
+                    $field['htmlType'] = 'date';
+                    break;
+                case 'xs:dateTime':
+                    $field['htmlType'] = 'datetime-local';
+                    break;
+                case 'xs:time':
+                    $field['htmlType'] = 'time';
+                    break;
+                case 'xs:boolean':
+                    $field['htmlType'] = 'checkbox';
+                    break;
+            }
+
 
             $fields[] = $field;
         }
