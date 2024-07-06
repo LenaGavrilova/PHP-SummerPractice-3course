@@ -124,30 +124,33 @@ class XmlGeneratorController extends AbstractController
             $field = [
                 'name' => (string) $element['name'],
                 'type' => (string) $element['type'],
-                'description' => (string) $element['description'] ?? '',
+                'description' => (string) $element->annotation->documentation ?? '',
                 'minLength' => null,
                 'maxLength' => null,
                 'pattern' => null,
                 'htmlType' => 'text',
+                'options' => [],
             ];
-            if (strpos($field['type'], 'tns:') === 0) {
-                $typeName = substr($field['type'], 4); // Remove 'tns:'
-                $typeDefinition = $xml->xpath("//xs:simpleType[@name='{$typeName}']");
 
-                if ($typeDefinition) {
-                    foreach ($typeDefinition[0]->restriction->children('xs', true) as $constraint) {
-                        switch ($constraint->getName()) {
-                            case 'minLength':
-                                $field['minLength'] = (int) $constraint['value'];
-                                break;
-                            case 'maxLength':
-                                $field['maxLength'] = (int) $constraint['value'];
-                                break;
-                            case 'pattern':
-                                $field['pattern'] = (string) $constraint['value'];
-                                break;
-                        }
+            $complexType = $xml->xpath("ancestor::xs:complexType[@name='{$field['type']}']/xs:sequence");
+            if ($complexType) {
+                foreach ($complexType[0]->children('xs', true) as $childElement) {
+                    $childName = (string) $childElement['name'];
+                    $childType = (string) $childElement['type'];
+                    $field['options'][$childName] = $childType;
+                }
+                $field['htmlType'] = 'select';
+            }
+
+            if (strpos($field['type'], 'tns:') === 0) {
+                $typeName = substr($field['type'], 4);
+                $enum = $xml->xpath("//xs:simpleType[@name='{$typeName}']/xs:restriction/xs:enumeration");
+                if ($enum) {
+                    foreach ($enum as $enumeration) {
+                        $value = (string) $enumeration['value'];
+                        $field['options'][$value] = (string) $enumeration->annotation->documentation;
                     }
+                    $field['htmlType'] = 'select';
                 }
             }
 
@@ -167,11 +170,11 @@ class XmlGeneratorController extends AbstractController
                     break;
             }
 
-
             $fields[] = $field;
         }
 
         return $fields;
     }
+
 }
 

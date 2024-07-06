@@ -10,7 +10,13 @@
             {% for field in fields %}
                 <div class="field-group">
                     <label>{{ field.name }} ({{ field.type }}):</label>
-                    {% if field.htmlType == 'checkbox' %}
+                    {% if field.htmlType == 'select' %}
+                        <select name="{{ field.name }}">
+                            {% for optionValue, optionLabel in field.options %}
+                                <option value="{{ optionValue }}">{{ optionLabel }}</option>
+                            {% endfor %}
+                        </select>
+                    {% elseif field.htmlType == 'checkbox' %}
                         <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
                     {% elseif field.htmlType == 'date' %}
                         <input type="date" name="fields[{{ field.name }}][value]"
