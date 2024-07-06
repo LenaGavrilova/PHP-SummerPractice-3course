@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class XmlGeneratorController extends AbstractController
@@ -36,7 +35,8 @@ class XmlGeneratorController extends AbstractController
     #[Route('/use-default-schema', name: 'use_default_schema')]
     public function useDefaultSchema(): Response
     {
-        $defaultXsdContent = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        $defaultXsdContent = '
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:element name="root">
             <xs:complexType>
                 <xs:sequence>
@@ -113,68 +113,107 @@ class XmlGeneratorController extends AbstractController
 
     /**
      * @throws \Exception
-     */
+     **/
     private function parseXsd(string $xsdContent): array
     {
         $fields = [];
+        $processedElements = [];
         $xml = new \SimpleXMLElement($xsdContent);
         $xml->registerXPathNamespace('xs', 'http://www.w3.org/2001/XMLSchema');
 
+        // Process complexType definitions
+        foreach ($xml->xpath('//xs:complexType') as $complexType) {
+            $typeName = (string) $complexType['name'];
+            $this->processComplexType($complexType, $typeName, $fields, $processedElements);
+        }
+
+        // Process elements and their types
         foreach ($xml->xpath('//xs:element') as $element) {
+            $typeName = (string) $element['name'];
+            if (!in_array($typeName, $processedElements)) {
+                $field = $this->parseElement($element);
+                $fields[$typeName][] = $field;
+                $processedElements[] = $typeName;
+            }
+
+            // Handle complex types defined within elements
+            if (isset($element->complexType)) {
+                $this->processComplexType($element->complexType, $typeName, $fields, $processedElements);
+            }
+        }
+
+        // Process simpleType definitions with enumerations
+        foreach ($xml->xpath('//xs:simpleType[xs:restriction/xs:enumeration]') as $simpleType) {
+            $typeName = (string) $simpleType['name'];
+
             $field = [
-                'name' => (string) $element['name'],
-                'type' => (string) $element['type'],
-                'description' => (string) $element->annotation->documentation ?? '',
-                'minLength' => null,
-                'maxLength' => null,
-                'pattern' => null,
-                'htmlType' => 'text',
+                'name' => $typeName,
+                'type' => 'enum',
+                'description' => '',
+                'htmlType' => 'select',
                 'options' => [],
             ];
 
-            $complexType = $xml->xpath("ancestor::xs:complexType[@name='{$field['type']}']/xs:sequence");
-            if ($complexType) {
-                foreach ($complexType[0]->children('xs', true) as $childElement) {
-                    $childName = (string) $childElement['name'];
-                    $childType = (string) $childElement['type'];
-                    $field['options'][$childName] = $childType;
-                }
-                $field['htmlType'] = 'select';
+            foreach ($simpleType->restriction->enumeration as $enumeration) {
+                $value = (string) $enumeration['value'];
+                $field['options'][$value] = (string) $enumeration->annotation->documentation;
             }
 
-            if (strpos($field['type'], 'tns:') === 0) {
-                $typeName = substr($field['type'], 4);
-                $enum = $xml->xpath("//xs:simpleType[@name='{$typeName}']/xs:restriction/xs:enumeration");
-                if ($enum) {
-                    foreach ($enum as $enumeration) {
-                        $value = (string) $enumeration['value'];
-                        $field['options'][$value] = (string) $enumeration->annotation->documentation;
-                    }
-                    $field['htmlType'] = 'select';
-                }
-            }
-
-            switch ($field['type']) {
-                case 'xs:date':
-                case 'date':
-                    $field['htmlType'] = 'date';
-                    break;
-                case 'xs:dateTime':
-                    $field['htmlType'] = 'datetime-local';
-                    break;
-                case 'xs:time':
-                    $field['htmlType'] = 'time';
-                    break;
-                case 'xs:boolean':
-                    $field['htmlType'] = 'checkbox';
-                    break;
-            }
-
-            $fields[] = $field;
+            $fields[$typeName] = [$field];
         }
 
         return $fields;
     }
 
-}
+    private function processComplexType(\SimpleXMLElement $complexType, string $typeName, array &$fields, array &$processedElements)
+    {
+        if (isset($complexType->sequence)) {
+            foreach ($complexType->sequence->element as $element) {
+                $field = $this->parseElement($element);
+                $fields[$typeName][] = $field;
+                $processedElements[] = (string) $element['name'];
+            }
+        }
+    }
 
+    private function parseElement(\SimpleXMLElement $element): array
+    {
+        $field = [
+            'name' => (string) $element['name'],
+            'type' => (string) $element['type'],
+            'description' => (string) $element->annotation->documentation ?? '',
+            'minLength' => null,
+            'maxLength' => null,
+            'pattern' => null,
+            'htmlType' => 'text',
+            'options' => [],
+        ];
+
+        switch ($field['type']) {
+            case 'xs:date':
+            case 'date':
+                $field['htmlType'] = 'date';
+                break;
+            case 'xs:dateTime':
+                $field['htmlType'] = 'datetime-local';
+                break;
+            case 'xs:time':
+                $field['htmlType'] = 'time';
+                break;
+            case 'xs:boolean':
+                $field['htmlType'] = 'checkbox';
+                break;
+        }
+
+        if (isset($element->simpleType)) {
+            $field['type'] = 'enum';
+            foreach ($element->simpleType->restriction->enumeration as $enumeration) {
+                $value = (string) $enumeration['value'];
+                $field['options'][$value] = (string) $enumeration->annotation->documentation;
+            }
+            $field['htmlType'] = 'select';
+        }
+
+        return $field;
+    }
+}

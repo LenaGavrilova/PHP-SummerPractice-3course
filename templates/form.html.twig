@@ -7,74 +7,46 @@
     <div class="container">
         <h1>Заполнение XML</h1>
         <form method="post" action="{{ path('generate_xml') }}">
-            {% for field in fields %}
-                <div class="field-group">
-                    <label>{{ field.name }} ({{ field.type }}):</label>
-                    {% if field.htmlType == 'select' %}
-                        <select name="{{ field.name }}">
-                            {% for optionValue, optionLabel in field.options %}
-                                <option value="{{ optionValue }}">{{ optionLabel }}</option>
-                            {% endfor %}
-                        </select>
-                    {% elseif field.htmlType == 'checkbox' %}
-                        <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
-                    {% elseif field.htmlType == 'date' %}
-                        <input type="date" name="fields[{{ field.name }}][value]"
-                                {% if field.minLength is not null %}
-                                    minlength="{{ field.minLength }}"
-                                {% endif %}
-                                {% if field.maxLength is not null %}
-                                    maxlength="{{ field.maxLength }}"
-                                {% endif %}
-                                {% if field.pattern is not null %}
-                                    pattern="{{ field.pattern }}"
-                                {% endif %}
-                               required>
-                    {% elseif field.htmlType == 'datetime-local' %}
-                        <input type="datetime-local" name="fields[{{ field.name }}][value]"
-                                {% if field.minLength is not null %}
-                                    minlength="{{ field.minLength }}"
-                                {% endif %}
-                                {% if field.maxLength is not null %}
-                                    maxlength="{{ field.maxLength }}"
-                                {% endif %}
-                                {% if field.pattern is not null %}
-                                    pattern="{{ field.pattern }}"
-                                {% endif %}
-                               required>
-                    {% elseif field.htmlType == 'time' %}
-                        <input type="time" name="fields[{{ field.name }}][value]"
-                                {% if field.minLength is not null %}
-                                    minlength="{{ field.minLength }}"
-                                {% endif %}
-                                {% if field.maxLength is not null %}
-                                    maxlength="{{ field.maxLength }}"
-                                {% endif %}
-                                {% if field.pattern is not null %}
-                                    pattern="{{ field.pattern }}"
-                                {% endif %}
-                               required>
+            {% for complexTypeName, complexTypeFields in fields %}
+                <h2>{{ complexTypeName }}</h2>
+                {% for field in complexTypeFields %}
+                    {% if field.type == 'enum' %}
+                        <div class="field-group">
+                            <label>{{ field.name }}:</label>
+                            <select name="{{ field.name }}">
+                                {% for optionValue, optionLabel in field.options %}
+                                    <option value="{{ optionValue }}">{{ optionLabel }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
+                            <input type="hidden" name="fields[{{ field.name }}][type]" value="enum">
+                            <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
+                        </div>
                     {% else %}
-                        <input type="text" name="fields[{{ field.name }}][value]"
-                                {% if field.minLength is not null %}
-                                    minlength="{{ field.minLength }}"
-                                {% endif %}
-                                {% if field.maxLength is not null %}
-                                    maxlength="{{ field.maxLength }}"
-                                {% endif %}
-                                {% if field.pattern is not null %}
-                                    pattern="{{ field.pattern }}"
-                                {% endif %}
-                               required>
+                        <div class="field-group">
+                            <label>{{ field.name }}:</label>
+                            {% if field.htmlType == 'select' %}
+                                <select name="{{ field.name }}">
+                                    {% for optionValue, optionLabel in field.options %}
+                                        <option value="{{ optionValue }}">{{ optionLabel }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% elseif field.htmlType == 'checkbox' %}
+                                <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
+                            {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
+                                <input type="{{ field.htmlType }}" name="fields[{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
+                            {% else %}
+                                <input type="text" name="fields[{{ field.name }}][value]" required>
+                            {% endif %}
+                            <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
+                            <input type="hidden" name="fields[{{ field.name }}][type }}" value="{{ field.type }}">
+                            <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
+                        </div>
                     {% endif %}
-                    <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
-                    <input type="hidden" name="fields[{{ field.name }}][type]" value="{{ field.type }}">
-                    <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
-                </div>
+                {% endfor %}
             {% endfor %}
             <button type="submit">Отправить</button>
         </form>
     </div>
-
     </body>
 {% endblock %}
