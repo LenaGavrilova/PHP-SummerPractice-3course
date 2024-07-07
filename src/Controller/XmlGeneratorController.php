@@ -210,6 +210,14 @@ class XmlGeneratorController extends AbstractController
             case 'xs:boolean':
                 $field['htmlType'] = 'checkbox';
                 break;
+
+        }
+
+        if (str_contains($field['type'], 'string')) {
+            $field['htmlType'] = 'string';
+        }
+        if (str_contains($field['type'],'digits')){
+            $field['htmlType'] = 'digits';
         }
 
         if (isset($element->simpleType)) {

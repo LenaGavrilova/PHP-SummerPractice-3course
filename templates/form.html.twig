@@ -25,7 +25,7 @@
                         <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
                     {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
                         <input type="{{ field.htmlType }}" name="fields[{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
-                    {% else %}
+                    {% elseif field.htmlType == 'string' or field.htmlType == 'digits' %}
                         <input type="text" name="fields[{{ field.name }}][value]" required>
                     {% endif %}
                     <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
@@ -35,5 +35,6 @@
             {% endfor %}
         {% endfor %}
         <button type="submit">Отправить</button>
-
+    </form>
+</div>
 {% endblock %}
