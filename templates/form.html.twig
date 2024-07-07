@@ -3,46 +3,37 @@
 {% block title %}Заполнение XML{% endblock %}
 
 {% block body %}
-    <body>
-    <div class="container">
-        <h1>Заполнение XML</h1>
-        <form method="post" action="{{ path('generate_xml') }}">
-            {% for complexTypeName, complexTypeFields in fields %}
-                <h2>{{ complexTypeName }}</h2>
-                {% for field in complexTypeFields %}
-                    {% if field.type == 'enum' %}
-                        <div class="field-group">
-                            <label>{{ field.name }}:</label>
-                            <select name="fields[{{ field.name }}][value]">
-                                {% for optionValue, optionLabel in field.options %}
-                                    <option value="{{ optionValue }}">{{ optionLabel }}</option>
-                                {% endfor %}
-                            </select>
-                            <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
-                        </div>
+<div class="container">
+    <h1>Заполнение XML</h1>
+    <form method="post" action="{{ path('generate_xml') }}">
+        {% for complexTypeName, complexTypeFields in fields %}
+            <h2>{{ complexTypeName }}</h2>
+            {% for field in complexTypeFields %}
+                <div class="field-group">
+                    {% if field.description %}
+                    <p>{{ field.description }} ({{ field.name }}):</p>
                     {% else %}
-                        <div class="field-group">
-                            <label>{{ field.name }}:</label>
-                            {% if field.htmlType == 'select' %}
-                                <select name="fields[{{ field.name }}][value]">
-                                    {% for optionValue, optionLabel in field.options %}
-                                        <option value="{{ optionValue }}">{{ optionLabel }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% elseif field.htmlType == 'checkbox' %}
-                                <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
-                            {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
-                                <input type="{{ field.htmlType }}" name="fields[{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
-                            {% else %}
-                                <input type="text" name="fields[{{ field.name }}][value]" required>
-                            {% endif %}
-                            <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
-                        </div>
+                    <label>{{ field.name }}:</label>
                     {% endif %}
-                {% endfor %}
+                    {% if field.htmlType == 'select' %}
+                        <select name="fields[{{ field.name }}][value]">
+                            {% for optionValue, optionLabel in field.options %}
+                                <option value="{{ optionValue }}">{{ optionLabel }}</option>
+                            {% endfor %}
+                        </select>
+                    {% elseif field.htmlType == 'checkbox' %}
+                        <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
+                    {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
+                        <input type="{{ field.htmlType }}" name="fields[{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
+                    {% else %}
+                        <input type="text" name="fields[{{ field.name }}][value]" required>
+                    {% endif %}
+                    <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
+                    <input type="hidden" name="fields[{{ field.name }}][type }}" value="{{ field.type }}">
+                    <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
+                </div>
             {% endfor %}
-            <button type="submit">Отправить</button>
-        </form>
-    </div>
-    </body>
+        {% endfor %}
+        <button type="submit">Отправить</button>
+
 {% endblock %}

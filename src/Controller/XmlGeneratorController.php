@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,7 @@ class XmlGeneratorController extends AbstractController
         // Если файл не загружен или произошла ошибка
         return $this->render('upload.html.twig');
     }
+
     #[Route('/use-default-schema', name: 'use_default_schema')]
     public function useDefaultSchema(): Response
     {
@@ -128,13 +130,13 @@ class XmlGeneratorController extends AbstractController
 
         // Process complexType definitions
         foreach ($xml->xpath('//xs:complexType') as $complexType) {
-            $typeName = (string) $complexType['name'];
+            $typeName = (string)$complexType['name'];
             $this->processComplexType($complexType, $typeName, $fields, $processedElements);
         }
 
         // Process elements and their types
         foreach ($xml->xpath('//xs:element') as $element) {
-            $typeName = (string) $element['name'];
+            $typeName = (string)$element['name'];
             if (!in_array($typeName, $processedElements)) {
                 $field = $this->parseElement($element);
                 $fields[$typeName][] = $field;
@@ -149,7 +151,7 @@ class XmlGeneratorController extends AbstractController
 
         // Process simpleType definitions with enumerations
         foreach ($xml->xpath('//xs:simpleType[xs:restriction/xs:enumeration]') as $simpleType) {
-            $typeName = (string) $simpleType['name'];
+            $typeName = (string)$simpleType['name'];
 
             $field = [
                 'name' => $typeName,
@@ -160,8 +162,8 @@ class XmlGeneratorController extends AbstractController
             ];
 
             foreach ($simpleType->restriction->enumeration as $enumeration) {
-                $value = (string) $enumeration['value'];
-                $field['options'][$value] = (string) $enumeration->annotation->documentation;
+                $value = (string)$enumeration['value'];
+                $field['options'][$value] = (string)$enumeration->annotation->documentation;
             }
 
             $fields[$typeName] = [$field];
@@ -176,7 +178,7 @@ class XmlGeneratorController extends AbstractController
             foreach ($complexType->sequence->element as $element) {
                 $field = $this->parseElement($element);
                 $fields[$typeName][] = $field;
-                $processedElements[] = (string) $element['name'];
+                $processedElements[] = (string)$element['name'];
             }
         }
     }
@@ -184,9 +186,9 @@ class XmlGeneratorController extends AbstractController
     private function parseElement(\SimpleXMLElement $element): array
     {
         $field = [
-            'name' => (string) $element['name'],
-            'type' => (string) $element['type'],
-            'description' => (string) $element->annotation->documentation ?? '',
+            'name' => (string)$element['name'],
+            'type' => (string)$element['type'],
+            'description' => isset($element->annotation->documentation) ? (string)$element->annotation->documentation : '',
             'minLength' => null,
             'maxLength' => null,
             'pattern' => null,
@@ -213,12 +215,14 @@ class XmlGeneratorController extends AbstractController
         if (isset($element->simpleType)) {
             $field['type'] = 'enum';
             foreach ($element->simpleType->restriction->enumeration as $enumeration) {
-                $value = (string) $enumeration['value'];
-                $field['options'][$value] = (string) $enumeration->annotation->documentation;
+                $value = (string)$enumeration['value'];
+                $field['options'][$value] = (string)$enumeration->annotation->documentation;
             }
             $field['htmlType'] = 'select';
         }
 
         return $field;
     }
+
+
 }
