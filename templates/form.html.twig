@@ -13,20 +13,18 @@
                     {% if field.type == 'enum' %}
                         <div class="field-group">
                             <label>{{ field.name }}:</label>
-                            <select name="{{ field.name }}">
+                            <select name="fields[{{ field.name }}][value]">
                                 {% for optionValue, optionLabel in field.options %}
                                     <option value="{{ optionValue }}">{{ optionLabel }}</option>
                                 {% endfor %}
                             </select>
-                            <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
-                            <input type="hidden" name="fields[{{ field.name }}][type]" value="enum">
                             <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
                         </div>
                     {% else %}
                         <div class="field-group">
                             <label>{{ field.name }}:</label>
                             {% if field.htmlType == 'select' %}
-                                <select name="{{ field.name }}">
+                                <select name="fields[{{ field.name }}][value]">
                                     {% for optionValue, optionLabel in field.options %}
                                         <option value="{{ optionValue }}">{{ optionLabel }}</option>
                                     {% endfor %}
@@ -38,8 +36,6 @@
                             {% else %}
                                 <input type="text" name="fields[{{ field.name }}][value]" required>
                             {% endif %}
-                            <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
-                            <input type="hidden" name="fields[{{ field.name }}][type }}" value="{{ field.type }}">
                             <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
                         </div>
                     {% endif %}

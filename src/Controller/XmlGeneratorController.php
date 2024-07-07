@@ -96,15 +96,20 @@ class XmlGeneratorController extends AbstractController
 
         return $errors;
     }
-
     private function generateXmlContent(array $fields): string
     {
         $xml = new \SimpleXMLElement('<data/>');
 
-        foreach ($fields as $field) {
-            $child = $xml->addChild($field['name'], htmlspecialchars($field['value']));
-            if (!empty($field['description'])) {
-                $child->addAttribute('description', htmlspecialchars($field['description']));
+        foreach ($fields as $fieldName => $fieldData) {
+            $value = $fieldData['value'] ?? '';
+            $description = $fieldData['description'] ?? '';
+
+            // Create XML element for the field
+            $child = $xml->addChild($fieldName, htmlspecialchars($value));
+
+            // Add description attribute if available
+            if (!empty($description)) {
+                $child->addAttribute('description', htmlspecialchars($description));
             }
         }
 
