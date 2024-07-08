@@ -11,26 +11,26 @@
             {% for field in complexTypeFields %}
                 <div class="field-group">
                     {% if field.description %}
-                    <p>{{ field.description }} ({{ field.name }}):</p>
+                        <p>{{ field.description }} ({{ field.name }}):</p>
                     {% else %}
-                    <label>{{ field.name }}:</label>
+                        <label>{{ field.name }}:</label>
                     {% endif %}
                     {% if field.htmlType == 'select' %}
-                        <select name="fields[{{ field.name }}][value]">
+                        <select name="fields[{{ complexTypeName }}][{{ field.name }}][value]">
                             {% for optionValue, optionLabel in field.options %}
                                 <option value="{{ optionValue }}">{{ optionLabel }}</option>
                             {% endfor %}
                         </select>
                     {% elseif field.htmlType == 'checkbox' %}
-                        <input type="checkbox" name="fields[{{ field.name }}][value]" value="1">
+                        <input type="checkbox" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" value="1">
                     {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
-                        <input type="{{ field.htmlType }}" name="fields[{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
-                    {% elseif field.htmlType == 'string' or field.htmlType == 'digits' %}
-                        <input type="text" name="fields[{{ field.name }}][value]" required>
+                        <input type="{{ field.htmlType }}" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
+                    {% elseif field.htmlType in ['string', 'digits'] %}
+                        <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" required>
                     {% endif %}
-                    <input type="hidden" name="fields[{{ field.name }}][name]" value="{{ field.name }}">
-                    <input type="hidden" name="fields[{{ field.name }}][type }}" value="{{ field.type }}">
-                    <input type="text" name="fields[{{ field.name }}][description]" placeholder="Описание">
+                    <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][name]" value="{{ field.name }}">
+                    <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][type]" value="{{ field.type }}">
+                    <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][description]" placeholder="Описание">
                 </div>
             {% endfor %}
         {% endfor %}

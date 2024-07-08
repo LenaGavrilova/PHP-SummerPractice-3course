@@ -102,21 +102,24 @@ class XmlGeneratorController extends AbstractController
     {
         $xml = new \SimpleXMLElement('<data/>');
 
-        foreach ($fields as $fieldName => $fieldData) {
-            $value = $fieldData['value'] ?? '';
-            $description = $fieldData['description'] ?? '';
+        foreach ($fields as $complexType => $complexTypeFields) {
+            foreach ($complexTypeFields as $fieldName => $fieldData) {
+                $value = $fieldData['value'] ?? '';
+                $description = $fieldData['description'] ?? '';
 
-            // Create XML element for the field
-            $child = $xml->addChild($fieldName, htmlspecialchars($value));
+                // Create XML element for the field
+                $child = $xml->addChild($fieldName, htmlspecialchars($value));
 
-            // Add description attribute if available
-            if (!empty($description)) {
-                $child->addAttribute('description', htmlspecialchars($description));
+                // Add description attribute if available
+                if (!empty($description)) {
+                    $child->addAttribute('description', htmlspecialchars($description));
+                }
             }
         }
 
         return $xml->asXML();
     }
+
 
     /**
      * @throws \Exception
