@@ -216,10 +216,19 @@ class XmlGeneratorController extends AbstractController
 
         }
 
-        if (str_contains($field['type'], 'string')) {
+        if (str_contains($field['type'], 'string') or str_contains($field['type'], 'normalizedString') or
+            str_contains($field['type'], 'token')){
             $field['htmlType'] = 'string';
         }
-        if (str_contains($field['type'],'digits')){
+        if (str_contains($field['type'],'digits') or str_contains($field['type'],'deciminal') or
+        str_contains($field['type'],'float') or str_contains($field['type'],'double') or
+    str_contains($field['type'],'integer') or str_contains($field['type'],'long') or
+            str_contains($field['type'],'int') or str_contains($field['type'],'short') or
+            str_contains($field['type'],'byte') or str_contains($field['type'],'nonPositiveInteger') or
+    str_contains($field['type'],'negativeInteger') or str_contains($field['type'],'nonNegativeInteger') or
+            str_contains($field['type'],'unsignedLong') or str_contains($field['type'],'unsignedInt') or
+    str_contains($field['type'],'unsignedShort')  or str_contains($field['type'],'unsignedByte') or
+            str_contains($field['type'],'positiveInteger') ){
             $field['htmlType'] = 'digits';
         }
 
