@@ -25,8 +25,10 @@
                         <input type="checkbox" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" value="1">
                     {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
                         <input type="{{ field.htmlType }}" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
-                    {% elseif field.htmlType in ['string', 'digits'] %}
+                    {% elseif field.htmlType in ['string'] %}
                         <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" required>
+                    {% elseif field.htmlType in ['digits'] %}
+                        <input type="number" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" required>
                     {% endif %}
                     <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][name]" value="{{ field.name }}">
                     <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][type]" value="{{ field.type }}">
