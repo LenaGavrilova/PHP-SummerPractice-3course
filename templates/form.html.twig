@@ -10,6 +10,9 @@
             <h2>{{ complexTypeName }}</h2>
             {% for field in complexTypeFields %}
                 <div class="field-group">
+                    {% if errors[complexTypeName][field.name] is defined %}
+                        <span class="error">{{ errors[complexTypeName][field.name]|join('<br>') }}</span>
+                    {% endif %}
                     {% if field.description %}
                         <p>{{ field.description }} ({{ field.name }}):</p>
                     {% else %}

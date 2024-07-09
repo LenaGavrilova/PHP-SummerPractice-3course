@@ -78,26 +78,53 @@ class XmlGeneratorController extends AbstractController
     {
         $errors = [];
 
-        foreach ($fields as $field) {
-            $value = $field['value'] ?? '';
-            $name = $field['name'] ?? '';
-            $type = $field['type'] ?? '';
-            $minLength = $field['minLength'] ?? null;
-            $maxLength = $field['maxLength'] ?? null;
+        foreach ($fields as $complexType => $complexTypeFields) {
+            foreach ($complexTypeFields as $fieldName => $field) {
+                $value = $field['value'] ?? '';
+                $type = $field['type'] ?? '';
 
-            if ($type == 'xs:string') {
-                if ($minLength !== null && strlen($value) < $minLength) {
-                    $errors[] = "Поле '$name' должно быть не короче $minLength символов.";
-                }
+
+                $maxLength = $this->getMaxLengthFromXsd($complexType, $fieldName);
+
                 if ($maxLength !== null && strlen($value) > $maxLength) {
-                    $errors[] = "Поле '$name' должно быть не длиннее $maxLength символов.";
+                    $errors[] = "Поле '$fieldName' должно быть не длиннее $maxLength символов.";
+                }
+
+                if ($this->isTypeDigits($type)) {
+                    $expectedLength = $this->getDigitsLength($type);
+                    if (!ctype_digit($value) || strlen($value) !== $expectedLength) {
+                        $errors[] = "Поле '$fieldName' должно быть числом и содержать ровно $expectedLength цифр.";
+                    }
+                }
+
+
+                if ($type == 'xs:date') {
+                    // Добавить проверки для даты
                 }
             }
-
         }
 
         return $errors;
     }
+
+    private function getMaxLengthFromXsd(string $complexType, string $fieldName): ?int
+    {
+
+        return null; // Вернуть максимальную длину или null, если не ограничено
+    }
+
+    private function isTypeDigits(string $type): bool
+    {
+        return strpos($type, 'digits-') !== false;
+    }
+
+    private function getDigitsLength(string $type): int
+    {
+        // Получение ожидаемой длины для digits-4, digits-6 и т.д.
+        preg_match('/digits-(\d+)/', $type, $matches);
+        return intval($matches[1] ?? 0);
+    }
+
     private function generateXmlContent(array $fields): string
     {
         $xml = new \SimpleXMLElement('<data/>');
