@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}XSD{% endblock %}
+
+{% block body %}
+<h2 class="current-path">{{path}}</h2>
+<div class="dirs">
+    <ul>
+        {% for dir in dirs%}
+        <li>
+            <a href="{{ path('xsd_view', {'path': dir}) }}">
+                {{ dir }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<br>
+
+<div class="files">
+    <ul>
+        {% for file in files %}
+        <li>
+            <a href="{{ path('xsd_view', {'path': file}) }}">
+                {{ files }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
