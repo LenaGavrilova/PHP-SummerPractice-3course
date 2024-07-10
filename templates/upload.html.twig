@@ -9,14 +9,6 @@
         {% for message in app.flashes('error') %}
             <div class="error">{{ message }}</div>
         {% endfor %}
-        <form method="post" enctype="multipart/form-data" action="{{ path('upload_xsd') }}">
-            <div class="form-group">
-                <input type="file" name="xsd" accept=".xsd" required>
-            </div>
-            <div class="form-group">
-                <button type="submit">Загрузить</button>
-            </div>
-        </form>
         <form method="post" action="{{ path('use_default_schema') }}">
             <div class="form-group">
                 <button type="submit">Использовать базовую схему</button>

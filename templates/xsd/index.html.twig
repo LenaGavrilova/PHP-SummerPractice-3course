@@ -11,7 +11,7 @@
         <ul>
             {% for file in files %}
             <li>
-                <a href="{{ path('xsd_view', {'path': file.path}) }}">
+                <a href="{{ path('xsd_view', {'path': file.path}) }}" class="file file-type-{{file.type}}">
                     {{ file.name }}
                 </a>
                 {% if file.name ends with ".xsd" %}

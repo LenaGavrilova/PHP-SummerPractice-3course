@@ -17,42 +17,45 @@ class XsdController extends AbstractController
 
 
     #[Route('/xsd/view/{path}', name: 'xsd_view', requirements: ["path" => ".*"])]
-    public function index(Request $request, string $path): Response
+    public function index(Request $request, string $path = ""): Response
     {
-        $fullPath = $this->getFileSystemPath($path);
+        $dirFileSystemPath = $this->getFileSystemPath($path);
 
-        if (!file_exists($fullPath) || in_array($path, self::IGNORE_FILES)) {
+        if (!file_exists($dirFileSystemPath) || in_array($path, self::IGNORE_FILES)) {
             return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
         }
 
-        if (is_file($fullPath)) {
+        if (is_file($dirFileSystemPath)) {
             // File
-            return new Response(file_get_contents($fullPath), Response::HTTP_OK, [
-                'Content-Type' => mime_content_type($fullPath),
+            return new Response(file_get_contents($dirFileSystemPath), Response::HTTP_OK, [
+                'Content-Type' => mime_content_type($dirFileSystemPath),
             ]);
         }
 
         // Directory
-        $files = scandir($fullPath);
+        $files = scandir($dirFileSystemPath);
 
         $dirs = [];
         $regularFiles = [];
 
-        foreach ($files as $file) {
-            if (in_array($file, self::IGNORE_FILES)) {
+        foreach ($files as $fileName) {
+            if (in_array($fileName, self::IGNORE_FILES)) {
                 continue;
             }
-            $filePath = $path . "/" . $file;
+            $filePathUrl = $path . "/" . $fileName;
+            $filePathFileSystem = $dirFileSystemPath . "/" . $fileName;
             $fileArray = [
-                'name' => $file,
-                'path' => $this->normalizePath($filePath)
+                'name' => $fileName,
+                'path' => $this->normalizePath($filePathUrl)
             ];
             if (str_starts_with($fileArray["path"], "/")) {
                 $fileArray["path"] = substr($fileArray["path"], 1);
             }
-            if (is_dir($filePath)) {
+            if (is_dir($filePathFileSystem)) {
+                $fileArray["type"] = "dir";
                 $dirs[] = $fileArray;
             } else {
+                $fileArray["type"] = "file";
                 $regularFiles[] = $fileArray;
             }
         }

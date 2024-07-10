@@ -13,7 +13,7 @@ class XmlGeneratorController extends AbstractController
 {
     public const XSD_DIR = "/static/xsd/";
 
-    #[Route('/upload-xsd/{path}', name: 'upload_xsd', requirements: ["path" => ".*"])]
+    #[Route('/upload-xsd/{path}', name: 'upload_xsd', requirements: ["path" => ".+"])]
     public function uploadXsd(Request $request, string $path): Response
     {
         try {

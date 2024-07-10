@@ -175,3 +175,16 @@ button[type="submit"]:hover {
     border: 1px solid black;
     padding: 3px;
 }
+
+.file {
+    text-decoration: underline;
+    font-size: 20px;
+}
+
+.file-type-dir {
+    color: blue;
+}
+
+.file-type-file {
+    color: black;
+}
