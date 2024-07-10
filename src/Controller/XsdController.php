@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class XsdController extends AbstractController
 {
@@ -55,5 +56,29 @@ class XsdController extends AbstractController
         }
 
         return $this->render('xsd/index.html.twig', ["path" => $path, "dirs" => $dirs, "files" => $regularFiles]);
+    }
+
+    #[Route('/xsd/upload/{path}', name: 'xsd_upload', requirements: ["path" => ".*"], methods: ["POST"])]
+    public function upload(Request $request, string $path): Response
+    {
+        /** @var UploadedFile $xsdFile */
+        $xsdFile = $request->files->get('xsd');
+        $xsdContent = file_get_contents($xsdFile->getPathname());
+
+        if (empty($xsdContent)) {
+            return $this->render('xsd/index.html.twig', [
+                'error' => 'Пожалуйста, прикрепите XSD файл',
+            ]);
+        }
+
+        try {
+            // Saving file
+            $uploadDir = $this->getParameter('kernel.project_dir') . self::XSD_DIR;
+            $xsdFile->move($uploadDir, $xsdFile->getClientOriginalName());
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Ошибка при обработке XML файла.');
+        }
+
+        return $this->redirectToRoute("xsd_view", ["path" => $path]);
     }
 }

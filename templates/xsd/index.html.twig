@@ -3,30 +3,45 @@
 {% block title %}XSD{% endblock %}
 
 {% block body %}
-<h2 class="current-path">{{path}}</h2>
-<div class="dirs">
-    <ul>
-        {% for dir in dirs%}
-        <li>
-            <a href="{{ path('xsd_view', {'path': dir}) }}">
-                {{ dir }}
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+<div class="container">
+    <h2 class="current-path">/{{path}}</h2>
+    <div class="dirs">
+        <ul>
+            {% for dir in dirs%}
+            <li>
+                <a href="{{ path('xsd_view', {'path': dir}) }}">
+                    {{ dir }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
-<br>
+    <br>
 
-<div class="files">
-    <ul>
-        {% for file in files %}
-        <li>
-            <a href="{{ path('xsd_view', {'path': file}) }}">
-                {{ file }}
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="files">
+        <ul>
+            {% for file in files %}
+            <li>
+                <a href="{{ path('xsd_view', {'path': file}) }}">
+                    {{ file }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <h2>Добавить XSD-файл</h2>
+    <form action="{{ path('xsd_upload', {'path': path}) }}" enctype="multipart/form-data" method="post"
+        class="upload-form">
+        <div class="form-group">
+            <label for="xsd">XSD-файл</label>
+            <input type="file" id="xsd" name="xsd" accept=".xsd" required>
+        </div>
+        <div class="form-group">
+            <button type="submit">Загрузить</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
