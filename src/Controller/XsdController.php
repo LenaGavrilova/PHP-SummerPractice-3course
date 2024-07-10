@@ -19,7 +19,7 @@ class XsdController extends AbstractController
     #[Route('/xsd/view/{path}', name: 'xsd_view', requirements: ["path" => ".*"])]
     public function index(Request $request, string $path): Response
     {
-        $fullPath = $this->getParameter('kernel.project_dir') . self::XSD_DIR . $path;
+        $fullPath = $this->getFileSystemPath($path);
 
         if (!file_exists($fullPath) || in_array($path, self::IGNORE_FILES)) {
             return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
@@ -42,20 +42,30 @@ class XsdController extends AbstractController
             if (in_array($file, self::IGNORE_FILES)) {
                 continue;
             }
-            $filePath = $fullPath . $file;
+            $filePath = $path . "/" . $file;
+            $fileArray = [
+                'name' => $file,
+                'path' => $this->normalizePath($filePath)
+            ];
             if (is_dir($filePath)) {
-                $dirs[] = $file;
+                $dirs[] = $fileArray;
             } else {
-                $regularFiles[] = $file;
+                $regularFiles[] = $fileArray;
             }
         }
 
-        // If this is top directory (no parent)
-        foreach (array_keys($dirs, "..", true) as $key) {
-            unset($dirs[$key]);
+        // If this is top directory (if there is no parent directory), make ".." return itself
+        if ($path === "") {
+            for ($i = 0; $i < count($dirs); $i++) {
+                if ($dirs[$i]["name"] == "..") {
+                    $dirs[$i]["path"] = $path;
+                }
+            }
         }
 
-        return $this->render('xsd/index.html.twig', ["path" => $path, "dirs" => $dirs, "files" => $regularFiles]);
+        $allFiles = array_merge($dirs, $regularFiles);
+
+        return $this->render('xsd/index.html.twig', ["path" => $path, "files" => $allFiles]);
     }
 
     #[Route('/xsd/upload/{path}', name: 'xsd_upload', requirements: ["path" => ".*"], methods: ["POST"])]
@@ -73,12 +83,62 @@ class XsdController extends AbstractController
 
         try {
             // Saving file
-            $uploadDir = $this->getParameter('kernel.project_dir') . self::XSD_DIR;
+            $uploadDir = $this->getFileSystemPath($path);
             $xsdFile->move($uploadDir, $xsdFile->getClientOriginalName());
         } catch (\Exception $e) {
             $this->addFlash('error', 'Ошибка при обработке XML файла.');
         }
 
         return $this->redirectToRoute("xsd_view", ["path" => $path]);
+    }
+
+    #[Route('/xsd/create-dir/{path}', name: 'xsd_create_dir', requirements: ["path" => ".*"], methods: ["POST"])]
+    public function createDirectory(Request $request, string $path): Response
+    {
+        $dirName = $request->request->get("dirname");
+
+        if (empty($dirName)) {
+            return $this->render('xsd/index.html.twig', [
+                'error' => 'Пожалуйста, укажите корректное название директории',
+            ]);
+        }
+
+        try {
+            // Creating dir
+            $fullPath = $this->getFileSystemPath($path);
+            mkdir($fullPath);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Ошибка при создании директории');
+        }
+
+        return $this->redirectToRoute("xsd_view", ["path" => $path]);
+    }
+
+    private function getFileSystemPath($path): string
+    {
+        return $this->getParameter('kernel.project_dir') . self::XSD_DIR . "/" . $path;
+    }
+
+    private function normalizePath(string $path): string
+    {
+        $s = array_reduce(explode('/', $path), function ($a, $b) {
+            if ($a === null) {
+                $a = "/";
+            }
+            if ($b === "" || $b === ".") {
+                return $a;
+            }
+            if ($b === "..") {
+                return dirname($a);
+            }
+
+            return preg_replace("/\/+/", "/", "$a/$b");
+        });
+
+        if (str_starts_with($s, "/")) {
+            $s = substr($s, 1);
+        }
+
+        return $s;
     }
 }

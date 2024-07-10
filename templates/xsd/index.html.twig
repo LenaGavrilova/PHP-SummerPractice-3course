@@ -3,28 +3,16 @@
 {% block title %}XSD{% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container__xsd-viewer">
+    <h1>XSD файлы</h1>
     <h2 class="current-path">/{{path}}</h2>
-    <div class="dirs">
-        <ul>
-            {% for dir in dirs%}
-            <li>
-                <a href="{{ path('xsd_view', {'path': dir}) }}">
-                    {{ dir }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <br>
 
     <div class="files">
         <ul>
             {% for file in files %}
             <li>
-                <a href="{{ path('xsd_view', {'path': file}) }}">
-                    {{ file }}
+                <a href="{{ path('xsd_view', {'path': file.path}) }}">
+                    {{ file.name }}
                 </a>
             </li>
             {% endfor %}
@@ -37,10 +25,21 @@
         class="upload-form">
         <div class="form-group">
             <label for="xsd">XSD-файл</label>
-            <input type="file" id="xsd" name="xsd" accept=".xsd" required>
+            <input type="file" id="xsd" name="xsd" accept=".xsd" required />
         </div>
         <div class="form-group">
             <button type="submit">Загрузить</button>
+        </div>
+    </form>
+
+    <h2>Создать директорию</h2>
+    <form action="{{ path('xsd_create_dir', {'path': path}) }}" method="post" class="create-dir-form">
+        <div class="form-group">
+            <label for="dirname">Название директории</label>
+            <input id="dirname" name="dirname" required />
+        </div>
+        <div class="form-group">
+            <button type="submit">Создать</button>
         </div>
     </form>
 </div>
