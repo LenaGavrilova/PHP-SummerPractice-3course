@@ -157,3 +157,13 @@ button[type="submit"]:hover {
     width: 90%;
     margin: 0 auto;
 }
+
+.delete-file-form {
+    display: inline-block;
+}
+
+.delete-file-button {
+    font-size: 10px;
+    background-color: red;
+    color: white;
+}

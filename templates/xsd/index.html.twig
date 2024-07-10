@@ -14,6 +14,11 @@
                 <a href="{{ path('xsd_view', {'path': file.path}) }}">
                     {{ file.name }}
                 </a>
+                {% if file.name != "." and file.name != ".." %}
+                <form action="{{ path('xsd_delete', {'path': file.path}) }}" class="delete-file-form" method="POST">
+                    <input type="submit" value="Удалить" class="delete-file-button">
+                </form>
+                {% endif %}
             </li>
             {% endfor %}
         </ul>
@@ -43,4 +48,17 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.querySelectorAll(".delete-file-form").forEach(node => {
+        node.addEventListener("submit", e => {
+            e.preventDefault();
+
+            let isConfirm = confirm("Вы уверены, что хотите удалить этот файл/директорию?");
+            if (isConfirm) {
+                e.currentTarget.submit();
+            }
+        })
+    })
+</script>
 {% endblock %}

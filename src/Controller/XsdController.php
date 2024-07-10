@@ -47,6 +47,9 @@ class XsdController extends AbstractController
                 'name' => $file,
                 'path' => $this->normalizePath($filePath)
             ];
+            if (str_starts_with($fileArray["path"], "/")) {
+                $fileArray["path"] = substr($fileArray["path"], 1);
+            }
             if (is_dir($filePath)) {
                 $dirs[] = $fileArray;
             } else {
@@ -105,13 +108,39 @@ class XsdController extends AbstractController
 
         try {
             // Creating dir
-            $fullPath = $this->getFileSystemPath($path);
+            $fullPath = $this->normalizePath($this->getFileSystemPath($path) . "/" . $dirName);
             mkdir($fullPath);
         } catch (\Exception $e) {
             $this->addFlash('error', 'Ошибка при создании директории');
         }
 
         return $this->redirectToRoute("xsd_view", ["path" => $path]);
+    }
+
+    #[Route('/xsd/delete/{path}', name: 'xsd_delete', requirements: ["path" => ".*"], methods: ["POST"])]
+    public function deleteFile(Request $request, string $path): Response
+    {
+        if ($path === "") {
+            return new Response('Невозможно удалить этот файл/директорию', Response::HTTP_BAD_REQUEST);
+        }
+        $fullPath = $this->getFileSystemPath($path);
+
+        if (!file_exists($fullPath) || in_array($path, self::IGNORE_FILES)) {
+            return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
+        }
+
+        if (is_file($fullPath)) {
+            // File
+            unlink($fullPath);
+        } else {
+            $this->removeDir($fullPath);
+        }
+
+        $pathExplode = explode('/', $path);
+        array_pop($pathExplode);
+        $parentPath = implode('/', $pathExplode);
+
+        return $this->redirectToRoute("xsd_view", ["path" => $parentPath]);
     }
 
     private function getFileSystemPath($path): string
@@ -135,10 +164,23 @@ class XsdController extends AbstractController
             return preg_replace("/\/+/", "/", "$a/$b");
         });
 
-        if (str_starts_with($s, "/")) {
-            $s = substr($s, 1);
-        }
-
         return $s;
+    }
+
+    private function removeDir(string $dir): void
+    {
+        $it = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $files = new \RecursiveIteratorIterator(
+            $it,
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
+        rmdir($dir);
     }
 }
