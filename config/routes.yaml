@@ -5,3 +5,11 @@ controllers:
 kernel:
     resource: ../src/Kernel.php
     type: annotation
+
+view_xml_upload:
+    path: /view-xml-upload
+    controller: App\Controller\XmlViewerUploadController::uploadAndDisplayXml
+
+view_xml:
+    path: /view-xml
+    controller: App\Controller\XmlViewerController::viewXml
