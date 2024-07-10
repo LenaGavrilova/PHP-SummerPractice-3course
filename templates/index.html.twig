@@ -8,14 +8,18 @@
     <meta charset="UTF-8">
     <title>Home</title>
 </head>
+
 <body>
     <div class="button-container">
-        <a href="{{ path('view_xml_upload') }}">Вывод данных из XML</a> <!--заглушка надо потом поменять-->
-
+        <a href="{{ path('view_xml_upload') }}">Вывод данных из XML</a>
     </div>
-    <div class="button-container">
 
-        <a href="{{ path('upload_xsd') }}">Генерация данных в XML</a>
+    <div class="button-container">
+        <a href="{{ path('xsd_view') }}">XSD схемы</a>
+    </div>
+
+    <div class="button-container">
+        <a href="{{ path('use_default_schema') }}">Создание XML с использованием базовой схемы</a>
     </div>
 </body>
 

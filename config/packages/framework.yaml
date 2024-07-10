@@ -12,10 +12,6 @@ framework:
         cookie_samesite: lax
         storage_factory_id: session.storage.factory.native
 
-    assets:
-        # Ensure the 'public/uploads' directory is accessible
-        base_path: /uploads
-
     #esi: true
     #fragments: true
     php_errors:

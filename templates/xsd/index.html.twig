@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}XSD{% endblock %}
+
+{% block body %}
+<div class="container__xsd-viewer">
+    <h1>XSD файлы</h1>
+    <h2 class="current-path">/{{path}}</h2>
+
+    <div class="files">
+        <ul>
+            {% for file in files %}
+            <li>
+                <a href="{{ path('xsd_view', {'path': file.path}) }}" class="file file-type-{{file.type}}">
+                    {{ file.name }}
+                </a>
+                {% if file.name ends with ".xsd" %}
+                <a class="upload-xsd-link" href="{{ path('upload_xsd', {'path': file.path}) }}">
+                    Заполнить
+                </a>
+                {% endif %}
+                {% if file.name != "." and file.name != ".." %}
+                <form action="{{ path('xsd_delete', {'path': file.path}) }}" class="delete-file-form" method="POST">
+                    <input type="submit" value="Удалить" class="delete-file-button">
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <h2>Добавить XSD-файл</h2>
+    <form action="{{ path('xsd_upload', {'path': path}) }}" enctype="multipart/form-data" method="post"
+        class="upload-form">
+        <div class="form-group">
+            <label for="xsd">XSD-файл</label>
+            <input type="file" id="xsd" name="xsd" accept=".xsd" required />
+        </div>
+        <div class="form-group">
+            <button type="submit">Загрузить</button>
+        </div>
+    </form>
+
+    <h2>Создать директорию</h2>
+    <form action="{{ path('xsd_create_dir', {'path': path}) }}" method="post" class="create-dir-form">
+        <div class="form-group">
+            <label for="dirname">Название директории</label>
+            <input id="dirname" name="dirname" required />
+        </div>
+        <div class="form-group">
+            <button type="submit">Создать</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll(".delete-file-form").forEach(node => {
+        node.addEventListener("submit", e => {
+            e.preventDefault();
+
+            let isConfirm = confirm("Вы уверены, что хотите удалить этот файл/директорию?");
+            if (isConfirm) {
+                e.currentTarget.submit();
+            }
+        })
+    })
+</script>
+{% endblock %}
