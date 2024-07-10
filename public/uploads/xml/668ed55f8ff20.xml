@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns:passportValidityRequest
+        xmlns:ns="urn://mvd/gismu/RFP_ACTUAL_FULL/1.0.1">
+        <ns:surname>Иванов</ns:surname>
+        <ns:name>Иван</ns:name>
+        <ns:patronymic>Иванович</ns:patronymic>
+        <ns:birthDate>1993-03-05</ns:birthDate>
+        <ns:series>4998</ns:series>
+        <ns:number>476351</ns:number>
+        <ns:issueDate>2010-10-10</ns:issueDate>
+        <ns:issuerCode>450-021</ns:issuerCode>
+</ns:passportValidityRequest>

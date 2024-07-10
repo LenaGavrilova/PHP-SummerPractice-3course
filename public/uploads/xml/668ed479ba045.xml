@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns:passportValidityResponse xmlns:ns="urn://mvd/gismu/RFP_ACTUAL_FULL/1.0.1">
+    <ns:docStatus>302</ns:docStatus>
+</ns:passportValidityResponse>

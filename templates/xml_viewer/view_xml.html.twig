@@ -1,0 +1,14 @@
+{# templates/xml_viewer/view_xml.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Просмотр XML{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Просмотр XML</h1>
+        <div class="xml-content">
+            <pre>{{ xmlContent|raw }}</pre>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{# templates/xml_viewer/xml_element.html.twig #}
+
+{% if element.name is defined %}
+    <strong>{{ element.name }}</strong>
+    <ul>
+        {% for key, value in element.attributes %}
+            <li><strong>{{ key }}</strong>: {{ value }}</li>
+        {% endfor %}
+    </ul>
+    {% if element.children is not empty %}
+        <ul>
+            {% for child in element.children %}
+                <li>
+                    {{ include('xml_viewer/xml_element.html.twig', { 'element': child }) }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endif %}
