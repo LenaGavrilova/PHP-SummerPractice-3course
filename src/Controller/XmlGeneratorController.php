@@ -83,23 +83,18 @@ class XmlGeneratorController extends AbstractController
                 $value = $field['value'] ?? '';
                 $type = $field['type'] ?? '';
 
-
-                $maxLength = $this->getMaxLengthFromXsd($complexType, $fieldName);
-
-                if ($maxLength !== null && strlen($value) > $maxLength) {
-                    $errors[] = "Поле '$fieldName' должно быть не длиннее $maxLength символов.";
+                if ($this->isTypeStr($type)) {
+                    $expectedLength = $this->getMaxLengthFromXsd($type);
+                    if (!ctype_digit($value)  strlen($value) !== $expectedLength) {
+                        $errors[] = "Поле '$fieldName' не должно превышать $expectedLength символа.";
+                    }
                 }
 
                 if ($this->isTypeDigits($type)) {
                     $expectedLength = $this->getDigitsLength($type);
-                    if (!ctype_digit($value) || strlen($value) !== $expectedLength) {
+                    if (!ctype_digit($value)  strlen($value) !== $expectedLength) {
                         $errors[] = "Поле '$fieldName' должно быть числом и содержать ровно $expectedLength цифр.";
                     }
-                }
-
-
-                if ($type == 'xs:date') {
-                    // Добавить проверки для даты
                 }
             }
         }
@@ -107,20 +102,24 @@ class XmlGeneratorController extends AbstractController
         return $errors;
     }
 
-    private function getMaxLengthFromXsd(string $complexType, string $fieldName): ?int
-    {
 
-        return null; // Вернуть максимальную длину или null, если не ограничено
+    private function getMaxLengthFromXsd(string $type){
+        preg_match('/string-(\d+)/', $type, $matches);
+        return intval($matches[1] ?? 0);
     }
-
     private function isTypeDigits(string $type): bool
     {
-        return strpos($type, 'digits-') !== false;
+        return (strpos($type, 'digits-') !== false or strpos($type, 'int-') !== false or
+            strpos($type, 'integer-') !== false);
+    }
+
+    private function isTypeStr(string $type): bool
+    {
+        return strpos($type, 'string-') !== false;
     }
 
     private function getDigitsLength(string $type): int
     {
-        // Получение ожидаемой длины для digits-4, digits-6 и т.д.
         preg_match('/digits-(\d+)/', $type, $matches);
         return intval($matches[1] ?? 0);
     }
