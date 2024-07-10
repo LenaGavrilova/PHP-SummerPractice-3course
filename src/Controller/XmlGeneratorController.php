@@ -11,23 +11,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class XmlGeneratorController extends AbstractController
 {
-    #[Route('/upload-xsd', name: 'upload_xsd')]
-    public function uploadXsd(Request $request): Response
+    public const XSD_DIR = "/static/xsd/";
+
+    #[Route('/upload-xsd/{path}', name: 'upload_xsd', requirements: ["path" => ".*"])]
+    public function uploadXsd(Request $request, string $path): Response
     {
-        if ($request->isMethod('POST')) {
-            /** @var UploadedFile $xsdFile */
-            $xsdFile = $request->files->get('xsd');
-            if ($xsdFile) {
-                try {
-                    $xsdContent = file_get_contents($xsdFile->getPathname());
-                    $fields = $this->parseXsd($xsdContent);
-                    return $this->render('form.html.twig', ['fields' => $fields]);
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Ошибка при обработке XSD файла.');
-                }
-            } else {
-                $this->addFlash('error', 'Файл не загружен.');
-            }
+        try {
+            $filePath = $this->getParameter('kernel.project_dir') . self::XSD_DIR . "/" . $path;
+            $xsdContent = file_get_contents($filePath);
+            $fields = $this->parseXsd($xsdContent);
+            return $this->render('form.html.twig', ['fields' => $fields]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Ошибка при обработке XSD файла.');
         }
 
         // Если файл не загружен или произошла ошибка
@@ -92,7 +87,7 @@ class XmlGeneratorController extends AbstractController
 
                 if ($this->isTypeDigits($type)) {
                     $expectedLength = $this->getDigitsLength($type);
-                    if (!ctype_digit($value)  || strlen($value) !== $expectedLength) {
+                    if (!ctype_digit($value) || strlen($value) !== $expectedLength) {
                         $errors[] = "Поле '$fieldName' должно быть числом и содержать ровно $expectedLength цифр.";
                     }
                 }
@@ -103,7 +98,8 @@ class XmlGeneratorController extends AbstractController
     }
 
 
-    private function getMaxLengthFromXsd(string $type){
+    private function getMaxLengthFromXsd(string $type)
+    {
         preg_match('/string-(\d+)/', $type, $matches);
         return intval($matches[1] ?? 0);
     }
@@ -169,13 +165,13 @@ class XmlGeneratorController extends AbstractController
 
         // Process complexType definitions
         foreach ($xml->xpath('//xs:complexType') as $complexType) {
-            $typeName = (string)$complexType['name'];
+            $typeName = (string) $complexType['name'];
             $this->processComplexType($complexType, $typeName, $fields, $processedElements);
         }
 
         // Process elements and their types
         foreach ($xml->xpath('//xs:element') as $element) {
-            $typeName = (string)$element['name'];
+            $typeName = (string) $element['name'];
             if (!in_array($typeName, $processedElements)) {
                 $field = $this->parseElement($element);
                 $fields[$typeName][] = $field;
@@ -190,7 +186,7 @@ class XmlGeneratorController extends AbstractController
 
         // Process simpleType definitions with enumerations
         foreach ($xml->xpath('//xs:simpleType[xs:restriction/xs:enumeration]') as $simpleType) {
-            $typeName = (string)$simpleType['name'];
+            $typeName = (string) $simpleType['name'];
 
             $field = [
                 'name' => $typeName,
@@ -201,8 +197,8 @@ class XmlGeneratorController extends AbstractController
             ];
 
             foreach ($simpleType->restriction->enumeration as $enumeration) {
-                $value = (string)$enumeration['value'];
-                $field['options'][$value] = (string)$enumeration->annotation->documentation;
+                $value = (string) $enumeration['value'];
+                $field['options'][$value] = (string) $enumeration->annotation->documentation;
             }
 
             $fields[$typeName] = [$field];
@@ -217,7 +213,7 @@ class XmlGeneratorController extends AbstractController
             foreach ($complexType->sequence->element as $element) {
                 $field = $this->parseElement($element);
                 $fields[$typeName][] = $field;
-                $processedElements[] = (string)$element['name'];
+                $processedElements[] = (string) $element['name'];
             }
         }
     }
@@ -225,9 +221,9 @@ class XmlGeneratorController extends AbstractController
     private function parseElement(\SimpleXMLElement $element): array
     {
         $field = [
-            'name' => (string)$element['name'],
-            'type' => (string)$element['type'],
-            'description' => isset($element->annotation->documentation) ? (string)$element->annotation->documentation : '',
+            'name' => (string) $element['name'],
+            'type' => (string) $element['type'],
+            'description' => isset($element->annotation->documentation) ? (string) $element->annotation->documentation : '',
             'minLength' => null,
             'maxLength' => null,
             'pattern' => null,
@@ -251,16 +247,19 @@ class XmlGeneratorController extends AbstractController
                 break;
         }
 
-        if (str_contains($field['type'], 'string') or str_contains($field['type'], 'normalizedString') or
-            str_contains($field['type'], 'token')) {
+        if (
+            str_contains($field['type'], 'string') or str_contains($field['type'], 'normalizedString') or
+            str_contains($field['type'], 'token')
+        ) {
             $field['htmlType'] = 'string';
             preg_match('/string-(\d+)/', $field['type'], $matches);
             if (!empty($matches)) {
-                $field['maxLength'] = (int)$matches[1];
+                $field['maxLength'] = (int) $matches[1];
             }
         }
 
-        if (str_contains($field['type'], 'digits') or str_contains($field['type'], 'decimal') or
+        if (
+            str_contains($field['type'], 'digits') or str_contains($field['type'], 'decimal') or
             str_contains($field['type'], 'float') or str_contains($field['type'], 'double') or
             str_contains($field['type'], 'integer') or str_contains($field['type'], 'long') or
             str_contains($field['type'], 'int') or str_contains($field['type'], 'short') or
@@ -268,21 +267,22 @@ class XmlGeneratorController extends AbstractController
             str_contains($field['type'], 'negativeInteger') or str_contains($field['type'], 'nonNegativeInteger') or
             str_contains($field['type'], 'unsignedLong') or str_contains($field['type'], 'unsignedInt') or
             str_contains($field['type'], 'unsignedShort') or str_contains($field['type'], 'unsignedByte') or
-            str_contains($field['type'], 'positiveInteger')) {
+            str_contains($field['type'], 'positiveInteger')
+        ) {
             $field['htmlType'] = 'digits';
             preg_match('/digits-(\d+)/', $field['type'], $matches);
             if (!empty($matches)) {
-                $field['maxLength'] = (int)$matches[1];
-                $field['minLength'] = (int)$matches[1];
-                $field['pattern'] = '\d{' . (int)$matches[1] . '}';
+                $field['maxLength'] = (int) $matches[1];
+                $field['minLength'] = (int) $matches[1];
+                $field['pattern'] = '\d{' . (int) $matches[1] . '}';
             }
         }
 
         if (isset($element->simpleType)) {
             $field['type'] = 'enum';
             foreach ($element->simpleType->restriction->enumeration as $enumeration) {
-                $value = (string)$enumeration['value'];
-                $field['options'][$value] = (string)$enumeration->annotation->documentation;
+                $value = (string) $enumeration['value'];
+                $field['options'][$value] = (string) $enumeration->annotation->documentation;
             }
             $field['htmlType'] = 'select';
         }

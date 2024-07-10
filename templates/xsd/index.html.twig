@@ -14,6 +14,11 @@
                 <a href="{{ path('xsd_view', {'path': file.path}) }}">
                     {{ file.name }}
                 </a>
+                {% if file.name ends with ".xsd" %}
+                <a class="upload-xsd-link" href="{{ path('upload_xsd', {'path': file.path}) }}">
+                    Заполнить
+                </a>
+                {% endif %}
                 {% if file.name != "." and file.name != ".." %}
                 <form action="{{ path('xsd_delete', {'path': file.path}) }}" class="delete-file-form" method="POST">
                     <input type="submit" value="Удалить" class="delete-file-button">

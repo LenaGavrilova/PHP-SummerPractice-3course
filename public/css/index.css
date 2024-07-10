@@ -167,3 +167,11 @@ button[type="submit"]:hover {
     background-color: red;
     color: white;
 }
+
+.upload-xsd-link {
+    font-size: 10px;
+    background-color: green;
+    color: white;
+    border: 1px solid black;
+    padding: 3px;
+}
