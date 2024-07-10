@@ -61,7 +61,7 @@ class XmlGeneratorController extends AbstractController
 
         if (!empty($errors)) {
             // Если есть ошибки, отобразим форму снова с сообщениями об ошибках
-            $this->addFlash('error', implode('<br>', $errors));
+            $this->addFlash('error', implode(' ', $errors));
             return $this->redirectToRoute('upload_xsd');
         }
 
@@ -85,14 +85,14 @@ class XmlGeneratorController extends AbstractController
 
                 if ($this->isTypeStr($type)) {
                     $expectedLength = $this->getMaxLengthFromXsd($type);
-                    if (!ctype_digit($value)  strlen($value) !== $expectedLength) {
+                    if (!ctype_digit($value) && strlen($value) > $expectedLength) {
                         $errors[] = "Поле '$fieldName' не должно превышать $expectedLength символа.";
                     }
                 }
 
                 if ($this->isTypeDigits($type)) {
                     $expectedLength = $this->getDigitsLength($type);
-                    if (!ctype_digit($value)  strlen($value) !== $expectedLength) {
+                    if (!ctype_digit($value)  || strlen($value) !== $expectedLength) {
                         $errors[] = "Поле '$fieldName' должно быть числом и содержать ровно $expectedLength цифр.";
                     }
                 }
@@ -239,23 +239,33 @@ class XmlGeneratorController extends AbstractController
             case 'xs:boolean':
                 $field['htmlType'] = 'checkbox';
                 break;
-
         }
 
         if (str_contains($field['type'], 'string') or str_contains($field['type'], 'normalizedString') or
-            str_contains($field['type'], 'token')){
+            str_contains($field['type'], 'token')) {
             $field['htmlType'] = 'string';
+            preg_match('/string-(\d+)/', $field['type'], $matches);
+            if (!empty($matches)) {
+                $field['maxLength'] = (int)$matches[1];
+            }
         }
-        if (str_contains($field['type'],'digits') or str_contains($field['type'],'deciminal') or
-        str_contains($field['type'],'float') or str_contains($field['type'],'double') or
-    str_contains($field['type'],'integer') or str_contains($field['type'],'long') or
-            str_contains($field['type'],'int') or str_contains($field['type'],'short') or
-            str_contains($field['type'],'byte') or str_contains($field['type'],'nonPositiveInteger') or
-    str_contains($field['type'],'negativeInteger') or str_contains($field['type'],'nonNegativeInteger') or
-            str_contains($field['type'],'unsignedLong') or str_contains($field['type'],'unsignedInt') or
-    str_contains($field['type'],'unsignedShort')  or str_contains($field['type'],'unsignedByte') or
-            str_contains($field['type'],'positiveInteger') ){
+
+        if (str_contains($field['type'], 'digits') or str_contains($field['type'], 'decimal') or
+            str_contains($field['type'], 'float') or str_contains($field['type'], 'double') or
+            str_contains($field['type'], 'integer') or str_contains($field['type'], 'long') or
+            str_contains($field['type'], 'int') or str_contains($field['type'], 'short') or
+            str_contains($field['type'], 'byte') or str_contains($field['type'], 'nonPositiveInteger') or
+            str_contains($field['type'], 'negativeInteger') or str_contains($field['type'], 'nonNegativeInteger') or
+            str_contains($field['type'], 'unsignedLong') or str_contains($field['type'], 'unsignedInt') or
+            str_contains($field['type'], 'unsignedShort') or str_contains($field['type'], 'unsignedByte') or
+            str_contains($field['type'], 'positiveInteger')) {
             $field['htmlType'] = 'digits';
+            preg_match('/digits-(\d+)/', $field['type'], $matches);
+            if (!empty($matches)) {
+                $field['maxLength'] = (int)$matches[1];
+                $field['minLength'] = (int)$matches[1];
+                $field['pattern'] = '\d{' . (int)$matches[1] . '}';
+            }
         }
 
         if (isset($element->simpleType)) {
@@ -269,6 +279,5 @@ class XmlGeneratorController extends AbstractController
 
         return $field;
     }
-
 
 }

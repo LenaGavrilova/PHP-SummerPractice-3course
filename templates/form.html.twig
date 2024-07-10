@@ -3,43 +3,43 @@
 {% block title %}Заполнение XML{% endblock %}
 
 {% block body %}
-<div class="container">
-    <h1>Заполнение XML</h1>
-    <form method="post" action="{{ path('generate_xml') }}">
-        {% for complexTypeName, complexTypeFields in fields %}
-            <h2>{{ complexTypeName }}</h2>
-            {% for field in complexTypeFields %}
-                <div class="field-group">
-                    {% if errors[complexTypeName][field.name] is defined %}
-                        <span class="error">{{ errors[complexTypeName][field.name]|join('<br>') }}</span>
-                    {% endif %}
-                    {% if field.description %}
-                        <p>{{ field.description }} ({{ field.name }}):</p>
-                    {% else %}
-                        <label>{{ field.name }}:</label>
-                    {% endif %}
-                    {% if field.htmlType == 'select' %}
-                        <select name="fields[{{ complexTypeName }}][{{ field.name }}][value]">
-                            {% for optionValue, optionLabel in field.options %}
-                                <option value="{{ optionValue }}">{{ optionLabel }}</option>
-                            {% endfor %}
-                        </select>
-                    {% elseif field.htmlType == 'checkbox' %}
-                        <input type="checkbox" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" value="1">
-                    {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
-                        <input type="{{ field.htmlType }}" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
-                    {% elseif field.htmlType in ['string'] %}
-                        <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" required>
-                    {% elseif field.htmlType in ['digits'] %}
-                        <input type="number" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" required>
-                    {% endif %}
-                    <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][name]" value="{{ field.name }}">
-                    <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][type]" value="{{ field.type }}">
-                    <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][description]" placeholder="Описание">
-                </div>
+    <div class="container">
+        <h1>Заполнение XML</h1>
+        <form method="post" action="{{ path('generate_xml') }}">
+            {% for complexTypeName, complexTypeFields in fields %}
+                <h2>{{ complexTypeName }}</h2>
+                {% for field in complexTypeFields %}
+                    <div class="field-group">
+                        {% if errors[complexTypeName][field.name] is defined %}
+                            <span class="error">{{ errors[complexTypeName][field.name]|join('<br>') }}</span>
+                        {% endif %}
+                        {% if field.description %}
+                            <p>{{ field.description }} ({{ field.name }}):</p>
+                        {% else %}
+                            <label>{{ field.name }}:</label>
+                        {% endif %}
+                        {% if field.htmlType == 'select' %}
+                            <select name="fields[{{ complexTypeName }}][{{ field.name }}][value]">
+                                {% for optionValue, optionLabel in field.options %}
+                                    <option value="{{ optionValue }}">{{ optionLabel }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elseif field.htmlType == 'checkbox' %}
+                            <input type="checkbox" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" value="1">
+                        {% elseif field.htmlType in ['date', 'datetime-local', 'time'] %}
+                            <input type="{{ field.htmlType }}" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.htmlType == 'date' %} value="{{ 'now'|date('Y-m-d') }}" {% endif %} required>
+                        {% elseif field.htmlType == 'string' %}
+                            <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.maxLength %} maxlength="{{ field.maxLength }}" {% endif %} required>
+                        {% elseif field.htmlType == 'digits' %}
+                            <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][value]" {% if field.maxLength %} maxlength="{{ field.maxLength }}" {% endif %} {% if field.minLength %} minlength="{{ field.minLength }}" {% endif %} {% if field.pattern %} pattern="{{ field.pattern }}" {% endif %} required>
+                        {% endif %}
+                        <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][name]" value="{{ field.name }}">
+                        <input type="hidden" name="fields[{{ complexTypeName }}][{{ field.name }}][type]" value="{{ field.type }}">
+                        <input type="text" name="fields[{{ complexTypeName }}][{{ field.name }}][description]" placeholder="Описание">
+                    </div>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-        <button type="submit">Отправить</button>
-    </form>
-</div>
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
 {% endblock %}
