@@ -7,9 +7,11 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
 }
+
 .button-container {
     text-align: center;
 }
+
 .button-container a {
     display: flex;
     justify-content: center;
@@ -24,20 +26,25 @@ body {
     font-size: 18px;
     text-align: center;
     padding: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s, box-shadow 0.3s;
     overflow-wrap: break-word;
 }
+
 .button-container a:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
+
 .field-group {
     margin-bottom: 10px;
 }
-.field-group input, .field-group select {
+
+.field-group input,
+.field-group select {
     margin-right: 10px;
 }
+
 body {
     font-family: Arial, sans-serif;
     display: flex;

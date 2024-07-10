@@ -9,15 +9,18 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class XsdController extends AbstractController
 {
-    public const XSD_DIR = "/public/xsd/";
+    public const XSD_DIR = "/static/xsd/";
+
+    // Files to be ignored (not returned and not viewed if directory)
+    public const IGNORE_FILES = [".gitignore"];
 
 
-    #[Route('/xsd/view/{path}   ', name: 'xsd_view', requirements: ["path" => ".*"])]
+    #[Route('/xsd/view/{path}', name: 'xsd_view', requirements: ["path" => ".*"])]
     public function index(Request $request, string $path): Response
     {
         $fullPath = $this->getParameter('kernel.project_dir') . self::XSD_DIR . $path;
 
-        if (!file_exists($fullPath)) {
+        if (!file_exists($fullPath) || in_array($path, self::IGNORE_FILES)) {
             return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
         }
 
@@ -35,6 +38,9 @@ class XsdController extends AbstractController
         $regularFiles = [];
 
         foreach ($files as $file) {
+            if (in_array($file, self::IGNORE_FILES)) {
+                continue;
+            }
             $filePath = $fullPath . $file;
             if (is_dir($filePath)) {
                 $dirs[] = $file;
