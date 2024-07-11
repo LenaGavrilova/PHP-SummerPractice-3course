@@ -107,6 +107,11 @@ class XmlViewerController extends AbstractController
         if (!$currentNode->hasChildNodes()) {
             $html .= $currentNode->textContent;
         }
+        if ($currentNode->attributes !== null) {
+            foreach ($currentNode->attributes as $attr) {
+                $html .= " " . $attr->nodeName . ": " . $attr->nodeValue . "; ";
+            }
+        }
         $html .= "\n";
 
         foreach ($currentNode->childNodes as $node) {
