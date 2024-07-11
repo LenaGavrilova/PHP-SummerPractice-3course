@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\XsdService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,68 +11,30 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class XsdController extends AbstractController
 {
-    public const XSD_DIR = "/static/xsd/";
+    private XsdService $xsdService;
 
-    // Files to be ignored (not returned and not viewed if directory)
-    public const IGNORE_FILES = [".gitignore"];
+    public function __construct(XsdService $xsdService)
+    {
+        $this->xsdService = $xsdService;
+    }
 
 
     #[Route('/xsd/view/{path}', name: 'xsd_view', requirements: ["path" => ".*"])]
     public function index(Request $request, string $path = ""): Response
     {
-        $dirFileSystemPath = $this->getFileSystemPath($path);
+        $resource = $this->xsdService->getResource($path);
 
-        if (!file_exists($dirFileSystemPath) || in_array($path, self::IGNORE_FILES)) {
-            return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
+        if ($resource === false) {
+            return new Response("Ресурс не найден!", Response::HTTP_NOT_FOUND);
         }
 
-        if (is_file($dirFileSystemPath)) {
-            // File
-            return new Response(file_get_contents($dirFileSystemPath), Response::HTTP_OK, [
-                'Content-Type' => mime_content_type($dirFileSystemPath),
+        if (gettype($resource) === "string") {
+            return new Response(file_get_contents($resource), Response::HTTP_OK, [
+                'Content-Type' => mime_content_type($resource),
             ]);
         }
 
-        // Directory
-        $files = scandir($dirFileSystemPath);
-
-        $dirs = [];
-        $regularFiles = [];
-
-        foreach ($files as $fileName) {
-            if (in_array($fileName, self::IGNORE_FILES)) {
-                continue;
-            }
-            $filePathUrl = $path . "/" . $fileName;
-            $filePathFileSystem = $dirFileSystemPath . "/" . $fileName;
-            $fileArray = [
-                'name' => $fileName,
-                'path' => $this->normalizePath($filePathUrl)
-            ];
-            if (str_starts_with($fileArray["path"], "/")) {
-                $fileArray["path"] = substr($fileArray["path"], 1);
-            }
-            if (is_dir($filePathFileSystem)) {
-                $fileArray["type"] = "dir";
-                $dirs[] = $fileArray;
-            } else {
-                $fileArray["type"] = "file";
-                $regularFiles[] = $fileArray;
-            }
-        }
-
-        // If this is top directory (if there is no parent directory), make ".." return itself
-        if ($path === "") {
-            for ($i = 0; $i < count($dirs); $i++) {
-                if ($dirs[$i]["name"] == "..") {
-                    $dirs[$i]["path"] = $path;
-                }
-            }
-        }
-
-        $allFiles = array_merge($dirs, $regularFiles);
-
-        return $this->render('xsd/index.html.twig', ["path" => $path, "files" => $allFiles]);
+        return $this->render('xsd/index.html.twig', ["path" => $path, "files" => $resource]);
     }
 
     #[Route('/xsd/upload/{path}', name: 'xsd_upload', requirements: ["path" => ".*"], methods: ["POST"])]
@@ -79,20 +42,11 @@ class XsdController extends AbstractController
     {
         /** @var UploadedFile $xsdFile */
         $xsdFile = $request->files->get('xsd');
-        $xsdContent = file_get_contents($xsdFile->getPathname());
-
-        if (empty($xsdContent)) {
-            return $this->render('xsd/index.html.twig', [
-                'error' => 'Пожалуйста, прикрепите XSD файл',
-            ]);
-        }
 
         try {
-            // Saving file
-            $uploadDir = $this->getFileSystemPath($path);
-            $xsdFile->move($uploadDir, $xsdFile->getClientOriginalName());
+            $this->xsdService->uploadXsdFile($xsdFile, $path);
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Ошибка при обработке XML файла.');
+            $this->addFlash('error', $e->getMessage());
         }
 
         return $this->redirectToRoute("xsd_view", ["path" => $path]);
@@ -103,18 +57,10 @@ class XsdController extends AbstractController
     {
         $dirName = $request->request->get("dirname");
 
-        if (empty($dirName)) {
-            return $this->render('xsd/index.html.twig', [
-                'error' => 'Пожалуйста, укажите корректное название директории',
-            ]);
-        }
-
         try {
-            // Creating dir
-            $fullPath = $this->normalizePath($this->getFileSystemPath($path) . "/" . $dirName);
-            mkdir($fullPath);
+            $this->xsdService->createDir($path, $dirName);
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Ошибка при создании директории');
+            $this->addFlash('error', $e->getMessage());
         }
 
         return $this->redirectToRoute("xsd_view", ["path" => $path]);
@@ -123,67 +69,12 @@ class XsdController extends AbstractController
     #[Route('/xsd/delete/{path}', name: 'xsd_delete', requirements: ["path" => ".*"], methods: ["POST"])]
     public function deleteFile(Request $request, string $path): Response
     {
-        if ($path === "") {
-            return new Response('Невозможно удалить этот файл/директорию', Response::HTTP_BAD_REQUEST);
+        try {
+            $parentPath = $this->xsdService->deleteFile($path);
+        } catch (\Exception $e) {
+            return new Response($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-        $fullPath = $this->getFileSystemPath($path);
-
-        if (!file_exists($fullPath) || in_array($path, self::IGNORE_FILES)) {
-            return new Response('File or directory not found.', Response::HTTP_NOT_FOUND);
-        }
-
-        if (is_file($fullPath)) {
-            // File
-            unlink($fullPath);
-        } else {
-            $this->removeDir($fullPath);
-        }
-
-        $pathExplode = explode('/', $path);
-        array_pop($pathExplode);
-        $parentPath = implode('/', $pathExplode);
 
         return $this->redirectToRoute("xsd_view", ["path" => $parentPath]);
-    }
-
-    private function getFileSystemPath($path): string
-    {
-        return $this->getParameter('kernel.project_dir') . self::XSD_DIR . "/" . $path;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        $s = array_reduce(explode('/', $path), function ($a, $b) {
-            if ($a === null) {
-                $a = "/";
-            }
-            if ($b === "" || $b === ".") {
-                return $a;
-            }
-            if ($b === "..") {
-                return dirname($a);
-            }
-
-            return preg_replace("/\/+/", "/", "$a/$b");
-        });
-
-        return $s;
-    }
-
-    private function removeDir(string $dir): void
-    {
-        $it = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
-        $files = new \RecursiveIteratorIterator(
-            $it,
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getPathname());
-            } else {
-                unlink($file->getPathname());
-            }
-        }
-        rmdir($dir);
     }
 }
