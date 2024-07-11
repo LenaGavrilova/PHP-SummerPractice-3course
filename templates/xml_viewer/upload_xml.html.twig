@@ -10,9 +10,14 @@
         {% for message in app.flashes('error') %}
             <div class="error">{{ message }}</div>
         {% endfor %}
-        <form method="post" enctype="multipart/form-data" action="{{ path('view_xml_upload') }}">
+        <form method="post" enctype="multipart/form-data" action="{{ path('view_xml') }}">
             <div class="form-group">
-                <input type="file" name="xml_file" accept=".xml" required>
+                <label for="xml_file">XML файл</label>
+                <input type="file" id="xml_file" name="xml_file" accept=".xml" required>
+            </div>
+            <div class="form-group">
+                <label for="xsd_path">Путь до XSD-схемы (пока только так :) )</label>
+                <input name="xsd_path" id="xsd_path" required placeholder="Путь">
             </div>
             <div class="form-group">
                 <button type="submit">Загрузить XML</button>

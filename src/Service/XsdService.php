@@ -127,7 +127,7 @@ class XsdService
 
     public function getXsdFileSystemPath($path): string
     {
-        return $this->projectDir . self::XSD_DIR . $path;
+        return $this->normalizePath($this->projectDir . self::XSD_DIR . $path);
     }
 
     public function scanDirectory($dirPathFileSystem, $dirPathRelative)
