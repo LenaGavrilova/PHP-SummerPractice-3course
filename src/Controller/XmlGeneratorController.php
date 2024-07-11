@@ -3,6 +3,7 @@
 
 namespace App\Controller;
 
+use App\Service\XsdService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,13 +12,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class XmlGeneratorController extends AbstractController
 {
-    public const XSD_DIR = "/static/xsd/";
+
+    private XsdService $xsdService;
+    public function __construct(XsdService $xsdService)
+    {
+        $this->xsdService = $xsdService;
+    }
 
     #[Route('/upload-xsd/{path}', name: 'upload_xsd', requirements: ["path" => ".+"])]
     public function uploadXsd(Request $request, string $path): Response
     {
         try {
-            $filePath = $this->getParameter('kernel.project_dir') . self::XSD_DIR . "/" . $path;
+            $filePath = $this->xsdService->getResource($path);
             $xsdContent = file_get_contents($filePath);
             $fields = $this->parseXsd($xsdContent);
             return $this->render('form.html.twig', ['fields' => $fields]);
